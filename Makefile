@@ -32,3 +32,13 @@ mypy:
 	mypy src tests
 
 .PHONY: install lint test coverage clean format mypy
+
+
+ollama-serve-and-run:
+	ollama serve
+	ollama run deepseek-llm
+
+uvicorn-serve:
+	uvicorn main:app --reload
+
+

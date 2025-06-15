@@ -10,5 +10,6 @@ class Query(BaseModel):
 
 @router.post("/chat")
 async def chat(query: Query):
-    result = rag_chain.run(query.query)
+    # New: Use .invoke() instead of .run()
+    result = rag_chain.invoke({"query": query.query})
     return {"answer": result}
