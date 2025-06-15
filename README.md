@@ -82,4 +82,4 @@ Bot: A Pod is the smallest deployable unit in Kubernetes...
 
 ## 📜 License
 
-MIT
+MIT -- License
