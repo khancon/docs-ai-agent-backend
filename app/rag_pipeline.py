@@ -1,12 +1,22 @@
 # app/rag_pipeline.py
 
-from langchain.vectorstores import Chroma
-from langchain.chains import RetrievalQA
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain_community.llms import Ollama
-from app.config import CHROMA_DB_DIR, EMBED_MODEL, LLM_MODEL, LLM_SERVER
+from langchain_community.document_loaders import WebBaseLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-def get_rag_chain():
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_ollama import OllamaLLM
+
+from langchain.chains import RetrievalQA
+from app.config import CHROMA_DB_DIR, EMBED_MODEL, LLM_SERVER
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(levelname)-8s %(message)s'
+)
+def get_rag_chain(model_name: str):
     # Load the same embedding model used during ingestion
     embedding_function = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 
@@ -18,7 +28,10 @@ def get_rag_chain():
 
     # Set up retriever and LLM
     retriever = vectorstore.as_retriever()
-    llm = Ollama(model=LLM_MODEL)
+    llm = OllamaLLM(
+        model=model_name,
+        base_url=LLM_SERVER
+    )
 
     # Build retrieval-augmented QA chain
     rag_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)

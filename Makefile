@@ -33,12 +33,38 @@ mypy:
 
 .PHONY: install lint test coverage clean format mypy
 
-
 ollama-serve-and-run:
-	ollama serve
+	ollama pull deepseek-llm
+	# ollama serve
 	ollama run deepseek-llm
 
 uvicorn-serve:
 	uvicorn main:app --reload
+
+docker-build:
+	docker-compose up --build
+
+clean-docker-build:
+	docker-compose down -v
+	rm -rf chroma_db  # make sure your local folder is clean
+	docker-compose up --build
+
+clean-docker-rebuild:
+	docker-compose down -v
+	docker-compose build
+	docker-compose up
+
+chat:
+	curl -X POST http://localhost:8000/chat \
+	     -H "Content-Type: application/json" \
+	     -d '{"query": "What is APIServiceSpec?", "model_name": "gemma3:1b"}'
+
+check-model:
+	curl -X POST http://localhost:8000/models/pull \
+		-H "Content-Type: application/json" \
+		-d '{"model_name": "gemma3:1b"}'
+
+list-models:
+	curl -X GET http://localhost:8000/models
 
 
