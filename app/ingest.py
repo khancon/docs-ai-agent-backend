@@ -30,9 +30,9 @@ def get_kubernetes_doc_urls():
     return urls[:MAX_PAGES]
 
 def ingest_kubernetes_docs():
-    if os.path.exists(os.path.join(CHROMA_DB_DIR, "index")):
-        logger.info("Chroma vectorstore already exists.")
-        return 0, 0.0
+    # if os.path.exists(os.path.join(CHROMA_DB_DIR, "index")):
+    #     logger.info("Chroma vectorstore already exists.")
+    #     return 0, 0.0
     
     start_time = time.time()
 
@@ -63,10 +63,20 @@ def ingest_kubernetes_docs():
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = splitter.split_documents(all_docs)
 
+    # logger.info(f"\nSample chunk:\n {chunks[0].page_content[:500]}")
+
     if not chunks:
         raise ValueError("No documents to index. Check if the URLs were loaded and split correctly.")
 
     logger.info(f"Split into {len(chunks)} chunks")
+
+    # ✅ DEBUG: Write chunks to a file
+    logger.info("Writing debug chunks to 'debug_chunks.txt'...")
+    with open("debug_chunks.txt", "w", encoding="utf-8") as f:
+        for i, chunk in enumerate(chunks):
+            logger.info(f"Writing chunk {i+1} with size {len(chunk.page_content)}")
+            f.write(f"\n--- Chunk #{i+1} ---\n")
+            f.write(chunk.page_content.strip() + "\n")
 
     embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
     db = Chroma.from_documents(

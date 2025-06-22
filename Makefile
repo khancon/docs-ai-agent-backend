@@ -57,12 +57,15 @@ clean-docker-rebuild:
 chat:
 	curl -X POST http://localhost:8000/chat \
 	     -H "Content-Type: application/json" \
-	     -d '{"query": "What is APIServiceSpec?", "model_name": "gemma3:1b"}'
+	     -d '{"query": "What is APIServiceSpec?", "model_name": "deepseek-r1:1.5b"}'
 
 check-model:
 	curl -X POST http://localhost:8000/models/pull \
 		-H "Content-Type: application/json" \
-		-d '{"model_name": "gemma3:1b"}'
+		-d '{"model_name": "deepseek-r1:1.5b"}'
+
+delete-model:
+	curl -X DELETE http://localhost:8000/models/deepseek-r1:latest
 
 list-models:
 	curl -X GET http://localhost:8000/models

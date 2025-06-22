@@ -4,4 +4,5 @@ chroma_db/
 node_modules/
 *.sqlite
 venv
+debug_chunks.txt
 

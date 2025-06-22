@@ -31,6 +31,15 @@ async def list_models():
         return resp.json()
     except Exception as e:
         return {"error": str(e)}
+
+@router.delete("/models/{model_name}")
+async def delete_model(model_name: str):
+    try:
+        resp = requests.delete(f"{LLM_SERVER}/api/delete", json={"name": model_name})
+        resp.raise_for_status()
+        return {"message": f"Model '{model_name}' deleted successfully."}
+    except Exception as e:
+        return {"error": str(e)}
     
 class ModelRequest(BaseModel):
     model_name: str

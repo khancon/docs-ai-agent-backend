@@ -28,6 +28,12 @@ def get_rag_chain(model_name: str):
 
     # Set up retriever and LLM
     retriever = vectorstore.as_retriever()
+
+    # DEBUG: Print retrieved chunks for a test query
+    docs = retriever.get_relevant_documents("What is APIServiceSpec?")
+    for i, doc in enumerate(docs):
+        logger.info(f"\n--- Chunk {i+1} ---\n{doc.page_content[:300]}")
+
     llm = OllamaLLM(
         model=model_name,
         base_url=LLM_SERVER
