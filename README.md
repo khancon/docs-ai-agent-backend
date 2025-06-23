@@ -62,18 +62,18 @@ Submits a user query to the backend and receives a response grounded in the Kube
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{{"query": "What is a Kubernetes Pod?", "model_name": "deepseek-r1:1.5b"}}'
+  -d '{"query": "What is a Kubernetes Pod?", "model_name": "deepseek-r1:1.5b"}'
 ```
 
 **Response Format:**
 
 ```json
-{{
-  "answer": {{
+{
+  "answer": {
     "query": "What is a Kubernetes Pod?",
     "result": "A Kubernetes Pod is the smallest deployable unit that can be created and managed in Kubernetes..."
-  }}
-}}
+  }
+}
 ```
 
 ---
@@ -95,7 +95,7 @@ Downloads and installs a new LLM to the local Ollama instance.
 ```bash
 curl -X POST http://localhost:8000/models/pull \
   -H "Content-Type: application/json" \
-  -d '{{"model_name": "deepseek-r1:1.5b"}}'
+  -d '{"model_name": "deepseek-r1:1.5b"}'
 ```
 
 ---
