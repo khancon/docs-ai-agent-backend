@@ -20,7 +20,7 @@ async def chat(query: Query):
 
     # Build the RAG chain using the requested model
     rag_chain = get_rag_chain(query.model_name)
-    result = rag_chain.invoke({"query": query.query})
+    result = rag_chain.invoke({"query": f"Answer concisely without inner thoughts. Do not include thinking steps or commentary. {query.query}"})
     return {"answer": result}
 
 @router.get("/models")

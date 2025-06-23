@@ -1,92 +1,141 @@
-# 🧠 Docs AI Chatbot Backend (RAG + DeepSeek-V3)
+# 🧠 Docs AI Chatbot Backend (RAG + Ollama)
 
-This is the **backend service** powering a Kubernetes documentation chatbot. It uses a retrieval-augmented generation (RAG) pipeline to answer technical questions grounded in the official [Kubernetes documentation](https://kubernetes.io/docs/), powered entirely by open-source models.
-
----
-
-## 🔧 What This Backend Does
-
-- 🧾 Crawls the Kubernetes documentation sitemap
-- ✂️ Chunks and embeds documentation using `bge-small-en-v1.5`
-- 💽 Stores embeddings in a local Chroma vector DB
-- 🤖 Serves answers via RAG pipeline using `DeepSeek-V3` running locally via Ollama
-- 📡 Exposes a FastAPI endpoint (`/chat`) for integration with a frontend
+This is the **backend** for a Kubernetes documentation chatbot that uses Retrieval-Augmented Generation (RAG) with a local open-source LLM. The system provides accurate, grounded answers to technical questions by querying embedded chunks of the official [Kubernetes documentation](https://kubernetes.io/docs/).
 
 ---
 
-## 📦 Requirements
+## 🔧 Features
 
-- Python 3.10+
-- Ollama (to run `deepseek-llm` model)
-- pip packages:
+- 🧭 **Documentation Ingestion**: Crawls the official Kubernetes docs via the sitemap and extracts page content.
+- ✂️ **Text Chunking**: Splits long documents into smaller, overlapping chunks using LangChain’s `RecursiveCharacterTextSplitter`.
+- 🧠 **Embeddings**: Converts text chunks into embeddings using `bge-small-en-v1.5` via HuggingFace, storing them in a persistent Chroma vector database.
+- 🧾 **RAG Pipeline**: Uses a combination of retriever and LLM (DeepSeek-R1 via Ollama) to generate grounded responses.
+- 🚀 **FastAPI Server**: Exposes a `/chat` endpoint for querying the system with a user question and receiving a synthesized answer.
+- 🐳 **Containerized**: Fully containerized using Docker and `docker-compose`, allowing for reproducible local development.
+
+---
+
+## 📦 Setup Instructions
+
+### 1. Clone and Set Up Python Virtual Environment
 
 ```bash
+git clone https://github.com/your-username/docs-ai-agent.git
+cd docs-ai-agent
+
+# Create a virtual environment and activate it
+python -m venv venv
+source venv/bin/activate
+
+# Upgrade pip and install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 ---
 
-## 🧠 LLM Setup (DeepSeek-V3)
+### 2. Run with Docker Compose
 
-Install and run the DeepSeek LLM using Ollama:
+Use the Makefile command below to clean and rebuild your Docker containers:
 
 ```bash
-ollama pull deepseek-llm
-ollama run deepseek-llm
+make clean-docker-rebuild
+```
+
+This will:
+- Stop and remove any previous containers and volumes.
+- Rebuild the FastAPI backend and Ollama containers.
+- Launch the entire application stack locally.
+
+Ensure Ollama is installed on your system for the model to run inside the container.
+
+---
+
+## 💬 API Endpoints
+
+### POST `/chat`
+
+Submits a user query to the backend and receives a response grounded in the Kubernetes docs.
+
+**Request Example:**
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{{"query": "What is a Kubernetes Pod?", "model_name": "deepseek-r1:1.5b"}}'
+```
+
+**Response Format:**
+
+```json
+{{
+  "answer": {{
+    "query": "What is a Kubernetes Pod?",
+    "result": "A Kubernetes Pod is the smallest deployable unit that can be created and managed in Kubernetes..."
+  }}
+}}
 ```
 
 ---
 
-## 💬 API Usage
+### GET `/models`
 
-Start the backend server:
+Returns a list of models currently available to the Ollama server.
 
 ```bash
-uvicorn main:app --reload
+curl http://localhost:8000/models
 ```
 
-Example `POST` request:
+---
+
+### POST `/models/pull`
+
+Downloads and installs a new LLM to the local Ollama instance.
 
 ```bash
-curl -X POST http://localhost:8000/chat \\
-  -H "Content-Type: application/json" \\
-  -d '{"query": "What is a Kubernetes Pod?"}'
+curl -X POST http://localhost:8000/models/pull \
+  -H "Content-Type: application/json" \
+  -d '{{"model_name": "deepseek-r1:1.5b"}}'
 ```
 
 ---
 
 ## 📁 Project Structure
 
-```
-backend/
+```text
+docs-ai-agent/
 ├── app/
-│   ├── api.py            # FastAPI route definitions
-│   ├── rag_pipeline.py   # LLM + retriever + RAG setup
-│   ├── ingest.py         # Doc crawler, chunking, embedding
-│   └── config.py         # Model and storage configuration
-├── chroma_db/            # Local vector DB
-├── main.py               # FastAPI entrypoint
-├── requirements.txt
-└── README.md
+│   ├── api.py              # Defines all FastAPI routes
+│   ├── rag_pipeline.py     # RAG logic and LLM + retriever setup
+│   ├── ingest.py           # Web crawler and embedding pipeline
+│   ├── ollama_utils.py     # Utility functions for managing Ollama models
+│   └── config.py           # Configuration settings and constants
+├── chroma_db/              # Local persistent Chroma vector database
+├── Dockerfile              # FastAPI app Docker image
+├── Dockerfile.ollama       # Ollama server Docker image
+├── docker-compose.yml      # Orchestration config for Docker containers
+├── Makefile                # Handy dev commands (build, run, clean, etc.)
+├── requirements.txt        # Python dependencies
+└── README.md               # This file
 ```
 
 ---
 
-## 📌 Roadmap
+## 🧠 How It Works
 
-- [x] Ingest Kubernetes documentation via sitemap
-- [x] Generate and store embeddings using Chroma
-- [ ] Expose FastAPI `/chat` endpoint
-- [ ] Add `/ingest` endpoint for on-demand refresh
-- [ ] Add source metadata to answers
-- [ ] Containerize with Docker
-- [ ] Deploy on Fly.io or Render
+1. **Ingestion**: The `ingest.py` script downloads and parses documentation pages using their sitemap, chunks content, and generates vector embeddings.
+2. **Storage**: The Chroma vector database stores these embeddings locally for efficient semantic retrieval.
+3. **Querying**: When a user sends a question to `/chat`, the app:
+   - Converts the query into an embedding
+   - Finds the most relevant document chunks
+   - Passes them as context to the LLM using a prompt template
+4. **Answer Generation**: The LLM (e.g., DeepSeek-R1) returns a final response based on the context and question.
 
 ---
 
 ## 🧩 Related Projects
 
-- 🔗 [Frontend repo (Chat UI)](https://github.com/your-username/docs-ai-agent-frontend) *(Coming soon)*
+- 🔗 [Frontend Chat UI](https://github.com/your-username/docs-ai-agent-frontend) *(Coming soon)*
 
 ---
 

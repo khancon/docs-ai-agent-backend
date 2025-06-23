@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.api import router
-from app.ingest import ingest_kubernetes_docs
+from app.ingest import ingest_docs
 from contextlib import asynccontextmanager
 import logging
 
@@ -12,7 +12,7 @@ logging.basicConfig(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up and ingesting docs if needed...")
-    total_size, duration = ingest_kubernetes_docs()
+    total_size, duration = ingest_docs()
     if total_size > 0:
         logger.info(f"Ingested {total_size:,} characters of documentation in {duration:.2f} seconds.")
     else:
@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
 
     yield  # 👈 This is where FastAPI continues with normal startup
 
-app = FastAPI(title="K8s Docs Chatbot API", lifespan=lifespan)
+app = FastAPI(title="Docs Chatbot API", lifespan=lifespan)
 
 app.include_router(router)
 
@@ -30,7 +30,7 @@ app.include_router(router)
 
 # def startup_event():
 #     logger.info("Starting up and ingesting docs if needed...")
-#     total_size, duration = ingest_kubernetes_docs()
+#     total_size, duration = ingest_docs()
 #     if total_size > 0:
 #         logger.info(f"Ingested {total_size:,} characters of documentation in {duration:.2f} seconds.")
 #     else:

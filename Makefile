@@ -1,4 +1,5 @@
 include .env
+export LLM_MODEL="llama3.2:1b"
 
 install-venv:
 	python -m venv venv
@@ -57,15 +58,15 @@ clean-docker-rebuild:
 chat:
 	curl -X POST http://localhost:8000/chat \
 	     -H "Content-Type: application/json" \
-	     -d '{"query": "What is APIServiceSpec?", "model_name": "deepseek-r1:1.5b"}'
+	     -d '{"query": "What is a CustomResourceDefinition?", "model_name": ${LLM_MODEL}}'
 
-check-model:
+pull-model:
 	curl -X POST http://localhost:8000/models/pull \
 		-H "Content-Type: application/json" \
-		-d '{"model_name": "deepseek-r1:1.5b"}'
+		-d '{"model_name": ${LLM_MODEL}}'
 
 delete-model:
-	curl -X DELETE http://localhost:8000/models/deepseek-r1:latest
+	curl -X DELETE http://localhost:8000/models/${LLM_MODEL}
 
 list-models:
 	curl -X GET http://localhost:8000/models

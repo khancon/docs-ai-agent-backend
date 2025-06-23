@@ -17,8 +17,8 @@ logging.basicConfig(
     format='%(levelname)-8s %(message)s'
 )
 
-def get_kubernetes_doc_urls():
-    resp = requests.get(SITEMAP_URL)
+def get_doc_urls(sitemap_url=SITEMAP_URL):
+    resp = requests.get(sitemap_url)
     logger.info(f"Sitemap status: {resp.status_code}")
     logger.info(f"Content-Type: {resp.headers.get('Content-Type')}")
     # logger.info(resp.text[:500])  # Print a snippet of the response
@@ -29,7 +29,7 @@ def get_kubernetes_doc_urls():
         logger.info(f"\tURL {i}: {urls[i]}")
     return urls[:MAX_PAGES]
 
-def ingest_kubernetes_docs():
+def ingest_docs(sitemap_url=SITEMAP_URL):
     # if os.path.exists(os.path.join(CHROMA_DB_DIR, "index")):
     #     logger.info("Chroma vectorstore already exists.")
     #     return 0, 0.0
@@ -37,7 +37,7 @@ def ingest_kubernetes_docs():
     start_time = time.time()
 
     logger.info("Building Chroma vectorstore from scratch...")
-    urls = get_kubernetes_doc_urls()
+    urls = get_doc_urls(sitemap_url)
     logger.info(f"Found {len(urls)} doc URLs")
     all_docs = []
     total_chars = 0
@@ -71,12 +71,12 @@ def ingest_kubernetes_docs():
     logger.info(f"Split into {len(chunks)} chunks")
 
     # ✅ DEBUG: Write chunks to a file
-    logger.info("Writing debug chunks to 'debug_chunks.txt'...")
-    with open("debug_chunks.txt", "w", encoding="utf-8") as f:
-        for i, chunk in enumerate(chunks):
-            logger.info(f"Writing chunk {i+1} with size {len(chunk.page_content)}")
-            f.write(f"\n--- Chunk #{i+1} ---\n")
-            f.write(chunk.page_content.strip() + "\n")
+    # logger.info("Writing debug chunks to 'debug_chunks.txt'...")
+    # with open("debug_chunks.txt", "w", encoding="utf-8") as f:
+    #     for i, chunk in enumerate(chunks):
+    #         logger.info(f"Writing chunk {i+1} with size {len(chunk.page_content)}")
+    #         f.write(f"\n--- Chunk #{i+1} ---\n")
+    #         f.write(chunk.page_content.strip() + "\n")
 
     embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
     db = Chroma.from_documents(
