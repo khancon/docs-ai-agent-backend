@@ -1,4 +1,4 @@
-# 🧠 Docs AI Chatbot Backend (RAG + Ollama)
+# 🧠 Docs AI Chatbot Agent (RAG + Ollama)
 
 This is the **backend** for a Kubernetes documentation chatbot that uses Retrieval-Augmented Generation (RAG) with a local open-source LLM. The system provides accurate, grounded answers to technical questions by querying embedded chunks of the official [Kubernetes documentation](https://kubernetes.io/docs/).
 
